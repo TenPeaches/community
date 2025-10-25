@@ -132,7 +132,7 @@ public class UserService implements CommunityConstant {
             return map;
         }
 
-        if(user.getStatus() == 0){
+        if (user.getStatus() == 0) {
             map.put("usernameMsg", "账号未激活!");
             return map;
         }
@@ -167,6 +167,42 @@ public class UserService implements CommunityConstant {
 
     public int updateHeader(int userId, String headerUrl) {
         return userMapper.updateHeader(userId, headerUrl);
+    }
+
+    public Map<String, Object> updatePassword(int userId, String oldPassword, String newPassword, String confirmPassword) {
+        Map<String, Object> map = new HashMap<>();
+        // 空值处理
+        if (StringUtils.isBlank(oldPassword)) {
+            map.put("oldPasswordMsg", "旧密码不能为空!");
+            return map;
+        }
+        if (StringUtils.isBlank(newPassword)) {
+            map.put("newPasswordMsg", "新密码不能为空!");
+            return map;
+        }
+        if (StringUtils.isBlank(confirmPassword)) {
+            map.put("confirmPasswordMsg", "确认密码不能为空!");
+            return map;
+        }
+
+        // 验证确认密码
+        if (!newPassword.equals(confirmPassword)) {
+            map.put("confirmPasswordMsg", "两次密码输入不一致!");
+            return map;
+        }
+
+        // 验证密码
+        User user = userMapper.selectById(userId);
+        oldPassword = CommunityUtil.md5(oldPassword + user.getSalt());
+        if (!oldPassword.equals(user.getPassword())) {
+            map.put("oldPasswordMsg", "旧密码错误!");
+            return map;
+        }
+
+        // 更新密码
+        newPassword = CommunityUtil.md5(newPassword + user.getSalt());
+        userMapper.updatePassword(userId, newPassword);
+        return map;
     }
 
 }

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/user")
@@ -105,4 +106,20 @@ public class UserController {
             logger.error("获取头像失败", e.getMessage());
         }
     }
+
+    //修改密码
+    @LoginRequired
+    @RequestMapping(path = "/update-password", method = RequestMethod.POST)
+    public String updatePassword(String oldPassword, String newPassword, String confirmPassword, Model model) {
+        Map<String, Object> map = userService.updatePassword(hostHolder.getUser().getId(), oldPassword, newPassword, confirmPassword);
+        if(map==null||map.isEmpty()){
+            return "redirect:/index";
+        }else {
+            model.addAttribute("oldPasswordMsg", map.get("oldPasswordMsg"));
+            model.addAttribute("newPasswordMsg", map.get("newPasswordMsg"));
+            model.addAttribute("confirmPasswordMsg", map.get("confirmPasswordMsg"));
+            return "/site/setting";
+        }
+    }
+
 }
